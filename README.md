@@ -1,38 +1,74 @@
-<<<<<<< HEAD
-# 🎙️ Voice Emotion Detection — Local VS Code Setup
+# 🎙️😊 AI Speech-Based Emotion Recognition
 
-Real-time speech emotion analyser built on RAVDESS · SVM / Ensemble · 8 emotions.
+Real-time **speech + face** emotion recognition system — SVM / Random Forest ensemble, trained on RAVDESS, cross-validated on TESS, EmoDB, and SAVEE. Built as a graduation project (ENCS5300) at Birzeit University.
 
 ---
 
-## Project Structure
+## 🎬 Demo Videos
+
+See it running before you set anything up:
+
+| Demo | Description |
+|------|-------------|
+| [🔴 Live voice + webcam](./Live%20voice%2Bwebcam.mp4) | Real-time multimodal detection using microphone + camera feed |
+| [🎥 Pre-recorded video](./pre%20recorded%20video.mp4) | Face + speech emotion detection run on a pre-recorded video file |
+| [🎤 Pre-recorded voice](./pre%20recorded%20voice.mp4) | Speech-only emotion detection on a pre-recorded audio clip |
+
+> Click a link to stream it directly from GitHub, or clone the repo and open the `.mp4` files locally.
+
+<details>
+<summary>Prefer an inline player? (click to expand)</summary>
+
+```html
+<video src="./Live voice+webcam.mp4" controls width="600"></video>
+```
+
+GitHub renders this as an inline playable video on the repo page for files tracked with Git LFS or under the size limit — if it doesn't render for you, use the plain links above instead.
+
+</details>
+
+---
+
+## 🧠 What This Is
+
+A real-time ensemble pipeline that fuses:
+- **Speech**: 162 acoustic features (MFCCs, pitch, energy, etc.) selected via `SelectKBest`
+- **Face**: facial expression features from webcam/video frames
+
+fused through an **SVM + Random Forest ensemble**, trained on **RAVDESS** and evaluated cross-corpus on **TESS**, **EmoDB**, and **SAVEE** for generalization.
+
+8 emotions detected: Neutral · Calm · Happy · Sad · Angry · Fear · Disgust · Surprise
+
+---
+
+## 📁 Project Structure
 
 ```
 emotion_project/
 │
-├── config.py              ← All paths & constants (edit here if needed)
-├── train.py               ← Full training pipeline
-├── realtime_app.py        ← Gradio real-time app (run this after training)
-├── requirements.txt       ← All dependencies
+├── config.py              ← All paths & constants
+├── train.py                ← Full training pipeline
+├── realtime_app.py         ← Gradio real-time app
+├── requirements.txt        ← Dependencies
 │
 ├── src/
 │   └── feature_extractor.py   ← Shared feature extraction module
 │
 ├── data/
-│   └── ravdess/           ← RAVDESS .wav files (auto-downloaded)
+│   └── ravdess/            ← RAVDESS .wav files (auto-downloaded)
 │
-├── model/                 ← Saved model artifacts (created by train.py)
+├── model/                  ← Saved model artifacts (created by train.py)
 │   ├── model.pkl
 │   ├── scaler.pkl
 │   ├── selector.pkl
 │   └── emotion_labels.json
 │
-└── outputs/               ← Confusion matrix plots
+└── outputs/                ← Confusion matrix plots
 ```
 
 ---
 
-## ⚙️ Setup (do this once)
+## ⚙️ Setup
 
 ### 1. Open the project in VS Code
 ```
@@ -40,8 +76,6 @@ File → Open Folder → select the emotion_project folder
 ```
 
 ### 2. Create a virtual environment
-Open the **VS Code terminal** (`Ctrl + `` ` ```) and run:
-
 ```bash
 # Windows
 python -m venv .venv
@@ -66,20 +100,18 @@ python train.py
 ```
 
 This will:
-1. Download RAVDESS (~600 MB) into `data/ravdess/` — **once only**
+1. Download RAVDESS (~600 MB) into `data/ravdess/` — once only
 2. Extract features from all audio files
 3. Run GridSearchCV to find the best SVM
 4. Train an SVM + Random Forest ensemble
 5. Save `model.pkl`, `scaler.pkl`, `selector.pkl`, `emotion_labels.json` into `model/`
 6. Save a confusion matrix plot to `outputs/`
 
-Training takes **15–30 minutes** on a typical laptop (the GridSearch is the slow part).
+Training takes **15–30 minutes** on a typical laptop (GridSearch is the slow part).
 
 ---
 
 ## 🚀 Run the Real-Time App
-
-After training is done:
 
 ```bash
 python realtime_app.py
@@ -89,15 +121,13 @@ A browser tab opens automatically at **http://localhost:7860**
 
 - Click the microphone button → speak for 2–4 seconds → stop recording
 - The app auto-analyses on stop, or click **Analyse Emotion**
-- You can also drag-and-drop a `.wav` / `.mp3` file
+- You can also drag-and-drop a `.wav` / `.mp4` file — try the sample recordings above!
 
 ---
 
-## 🔄 Using Your Already-Trained Model (from Colab)
+## 🔄 Using an Already-Trained Model (e.g. from Colab)
 
-If you already trained in Colab and want to use that model locally:
-
-1. In Colab, add and run this cell to download your artifacts:
+1. In Colab, run:
    ```python
    from google.colab import files
    import zipfile, os, joblib, json
@@ -110,14 +140,13 @@ If you already trained in Colab and want to use that model locally:
    with open('/content/emotion_model/emotion_labels.json','w') as f:
        json.dump(emotion_labels, f)
 
-   # Zip and download
    with zipfile.ZipFile('/content/emotion_model.zip','w') as zf:
        for p in Path('/content/emotion_model').iterdir():
            zf.write(p, p.name)
    files.download('/content/emotion_model.zip')
    ```
 
-2. Unzip the downloaded file into your local `model/` folder:
+2. Unzip into your local `model/` folder:
    ```
    emotion_project/model/model.pkl
    emotion_project/model/scaler.pkl
@@ -125,7 +154,7 @@ If you already trained in Colab and want to use that model locally:
    emotion_project/model/emotion_labels.json
    ```
 
-3. Run the app directly — no training needed:
+3. Run directly — no training needed:
    ```bash
    python realtime_app.py
    ```
@@ -141,10 +170,7 @@ If you already trained in Colab and want to use that model locally:
 | Select Python interpreter | Ctrl+Shift+P → "Python: Select Interpreter" → choose `.venv` |
 | Stop the app | Ctrl+C in terminal |
 
-**Recommended VS Code Extensions:**
-- Python (Microsoft)
-- Pylance
-- Jupyter (if you want to run the original `.ipynb` notebook)
+**Recommended VS Code Extensions:** Python (Microsoft), Pylance, Jupyter
 
 ---
 
@@ -165,17 +191,14 @@ If you already trained in Colab and want to use that model locally:
 
 ## ⚠️ Troubleshooting
 
-**`ModuleNotFoundError: No module named 'librosa'`**  
+**`ModuleNotFoundError: No module named 'librosa'`**
 → Make sure your `.venv` is activated and `pip install -r requirements.txt` ran successfully.
 
-**`FileNotFoundError: Missing model files`**  
+**`FileNotFoundError: Missing model files`**
 → Run `python train.py` first, or copy your Colab model files into the `model/` folder.
 
-**Microphone not detected in browser**  
+**Microphone not detected in browser**
 → Allow microphone access when the browser asks. On Windows, also check Privacy Settings → Microphone.
 
-**App opens but shows blank page**  
+**App opens but shows blank page**
 → Manually go to http://localhost:7860 in your browser.
-=======
-# no-face-
->>>>>>> f78e82f7ab15c6a685e03ce7d46dfe0c22dd3ef6
